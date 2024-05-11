@@ -1,0 +1,13 @@
+name: "Build test"
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: [self-hosted]
+    steps: 
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Build docker image
+        run: |
+          docker build . -t pylontech_exporter:${{ github.ref_name }}
