@@ -8,6 +8,11 @@ jobs:
     steps: 
       - name: Check out repository code
         uses: actions/checkout@v4
+      - name: Check env
+        run: |
+          pwd
+          id
+          printenv
       - name: Build docker image
         run: |
           docker build . -t pylontech_exporter:${{ github.ref_name }}
