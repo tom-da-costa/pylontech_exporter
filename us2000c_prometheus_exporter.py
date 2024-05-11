@@ -23,11 +23,7 @@ BATTERY_CELL_COULOMB = Gauge('battery_cell_coulomb', 'Battery Cell Coulomb (Aka 
 BATTERY_CELL_STATE = Enum('battery_cell_state', 'Battery Cell State', ['index','cell'], 'pylontech', states=['Idle', 'Charge', 'Dischg'])
 BATTERY_CELL_BAL = Enum('battery_cell_bal_state', 'Battery Cell BAL Properties State', ['index','cell'], 'pylontech', states=['N', 'Y'])
 
-
-# Init serial
-ser = serial.Serial("/dev/ttyUSB0", baudrate=115200)
-
-def exec_pwr():
+def exec_pwr(ser):
   while(ser.in_waiting != 0):
     ser.read()
   ser.write(b'pwr\n')
@@ -145,25 +141,25 @@ def parse_command_bat(raw_txt):
   return cell_dicts
 
 
-def append_cell_voltage(pwr_dicts):
+def append_cell_voltage(ser,pwr_dicts):
   for pwr_dict in pwr_dicts:
     print("Process bat " + pwr_dict['Power'])
-    resp = exec_bat(pwr_dict['Power'])
+    resp = exec_bat(ser,pwr_dict['Power'])
     cell_dicts = parse_command_bat(resp)
     pwr_dict['Cells'] = cell_dicts
 
 # Decorate function with metric.
 @UPDATE_METRICS_DURATION.time()
-def update_metrics():
+def update_metrics(ser):
   try:
     print("=================\nGetting pwrs raw infos")
-    resp = exec_pwr()
+    resp = exec_pwr(ser)
     #print(resp)
     print("Parsing pwrs raw infos")
     pwr_dicts = parse_command_pwr(resp)
     #print(pwr_dicts)
     print("Add cells infos")
-    append_cell_voltage(pwr_dicts)
+    append_cell_voltage(ser,pwr_dicts)
   # print(pwr_dicts)
     print("Exporting infos as json for debug purpose")
     with open("sample.json", "w") as outfile: 
@@ -192,10 +188,12 @@ def update_metrics():
 
 
 if __name__ == '__main__':
+  # Init serial
+  ser = serial.Serial("/dev/ttyUSB0", baudrate=115200)
   # Start up the server to expose the metrics.
   scan_times = 0
   start_http_server(9094)
   # Generate some requests.
   while True:
-    update_metrics()
+    update_metrics(ser)
     time.sleep(2)
