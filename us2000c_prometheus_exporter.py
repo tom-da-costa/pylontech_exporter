@@ -190,7 +190,7 @@ def update_metrics(ser):
 
 if __name__ == '__main__':
   device_path = os.getenv('DEVICE_PATH', '/dev/ttyUSB0')
-  extra_delay = os.getenv('EXTRA_DELAY', '2')
+  extra_delay = os.getenv('EXTRA_DELAY', '7')
   # Init serial
   ser = serial.Serial(device_path, baudrate=115200)
   # Start up the server to expose the metrics.
