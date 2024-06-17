@@ -2,6 +2,7 @@ from prometheus_client import start_http_server, Gauge, Enum, Summary, Counter
 import time
 import serial
 import json
+import os
 
 # Create a metric to track time spent and requests made.
 UPDATE_METRICS_DURATION = Gauge(name='metrics_retrieving_duration', documentation='Time spent retrieving metrics', namespace='pylontech',unit='seconds')
@@ -188,12 +189,14 @@ def update_metrics(ser):
 
 
 if __name__ == '__main__':
+  device_path = os.getenv('DEVICE_PATH', '/dev/ttyUSB0')
+  extra_delay = os.getenv('EXTTA_DELAY', '2')
   # Init serial
-  ser = serial.Serial("/dev/ttyUSB0", baudrate=115200)
+  ser = serial.Serial(device_path, baudrate=115200)
   # Start up the server to expose the metrics.
   scan_times = 0
   start_http_server(9094)
   # Generate some requests.
   while True:
     update_metrics(ser)
-    time.sleep(2)
+    time.sleep(int(extra_delay))
