@@ -25,6 +25,9 @@ jobs:
         id: generate-docker-tag
         run: |
           DOCKER_TAG=$(echo ${{ github.ref_name }} | tr / -)
+          if [[ ${{ github.ref_name }} == "main" ]]; then
+            DOCKER_TAG=latest
+          fi
           echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_OUTPUT
       - name: Build docker image
         run: |
