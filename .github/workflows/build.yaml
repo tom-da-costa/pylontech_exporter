@@ -1,4 +1,4 @@
-name: "Build test"
+name: "Build"
 
 on: [push]
 
@@ -23,9 +23,9 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build docker image
         run: |
-          docker build . -t ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+          docker build . -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
       - name: Push docker image
         # Push the image only if the branch is the default  branch
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
-          docker push ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
