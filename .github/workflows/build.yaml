@@ -22,6 +22,7 @@ jobs:
           id
           printenv
           ls
+          python3 --version
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -54,7 +55,19 @@ jobs:
             type=ref,event=branch
 
       # type=raw,value=${{ steps.generate-docker-tag.outputs.DOCKER_TAG }}
-      - name: Build and push
+      - name: Build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Unit Test
+        run: |
+          echo "HELLO WORLD!"
+
+      - name: Push
         uses: docker/build-push-action@v5
         with:
           context: .
