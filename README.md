@@ -7,3 +7,4 @@ Collect pylontech data via the console interface and Expose them in a prometheus
 * EXTRA_DELAY -> SOFT_DELAY (dynamic delay)(include the update_metrics)
 * Make it more error resiliante. if possible, never crash the container from app level error
 * Add tests
+* Make command line arguments take precedence
