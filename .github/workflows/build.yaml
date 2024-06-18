@@ -5,6 +5,7 @@ on: [push]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  TEST_TAG: test
 
 jobs:
   build:
@@ -60,12 +61,11 @@ jobs:
         with:
           context: .
           load: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.TEST_TAG }}
 
       - name: Unit Test
         run: |
-          echo "HELLO WORLD!"
+          docker run --rm -v $(pwd):/home/user/tests -w /home/user/tests ${{ env.TEST_TAG }} python3 generated_unittest.py
 
       - name: Push
         uses: docker/build-push-action@v5
