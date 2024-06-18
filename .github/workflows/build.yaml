@@ -35,14 +35,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name : Generate docker tag
-        id: generate-docker-tag
-        run: |
-          DOCKER_TAG=$(echo ${{ github.ref_name }} | tr / -)
-          if [[ ${{ github.ref_name }} == "main" ]]; then
-            DOCKER_TAG=latest
-          fi
-          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_OUTPUT
+      # - name : Generate docker tag
+      #   id: generate-docker-tag
+      #   run: |
+      #     DOCKER_TAG=$(echo ${{ github.ref_name }} | tr / -)
+      #     if [[ ${{ github.ref_name }} == "main" ]]; then
+      #       DOCKER_TAG=latest
+      #     fi
+      #     echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_OUTPUT
 
       - name: Get Docker metadata
         id: meta
