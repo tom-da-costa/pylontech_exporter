@@ -3,6 +3,7 @@ import time
 import serial
 import json
 import os
+import argparse
 
 # Create a metric to track time spent and requests made.
 UPDATE_METRICS_DURATION = Gauge(name='metrics_retrieving_duration', documentation='Time spent retrieving metrics', namespace='pylontech',unit='seconds')
@@ -189,14 +190,24 @@ def update_metrics(ser):
 
 
 if __name__ == '__main__':
-  device_path = os.getenv('DEVICE_PATH', '/dev/ttyUSB0')
-  extra_delay = os.getenv('EXTRA_DELAY', '7')
+  # Parse arguments
+  parser = argparse.ArgumentParser(description='Pylontech US2000C Prometheus Exporter')
+  parser.add_argument('--device_path', dest="devicepath", type=str, default='/dev/ttyUSB0', help='Path to the serial device')
+  parser.add_argument('--extra_delay', dest="extradelay", type=str, default='7', help='Extra delay between each data collection')
+  parser.add_argument('--port', dest="port", type=str, default='9094', help='Port to expose the metrics')
+  parser.add_argument('--debug', dest="debug", action='store_true', help='Enable debug mode')
+  args = parser.parse_args()
+
+  DEVICE_PATH = os.getenv('DEVICE_PATH', args.devicepath)
+  EXTRA_DELAY = os.getenv('EXTRA_DELAY', args.extradelay)
+  HTTP_PORT = os.getenv('HTTP_PORT', args.port)
+  DEBUG = True if os.getenv('DEBUG', str(args.debug)).upper() == 'TRUE' else False
+
   # Init serial
-  ser = serial.Serial(device_path, baudrate=115200)
+  ser = serial.Serial(DEVICE_PATH, baudrate=115200)
   # Start up the server to expose the metrics.
-  scan_times = 0
-  start_http_server(9094)
+  start_http_server(HTTP_PORT)
   # Generate some requests.
   while True:
     update_metrics(ser)
-    time.sleep(int(extra_delay))
+    time.sleep(int(EXTRA_DELAY))
