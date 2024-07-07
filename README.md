@@ -8,4 +8,4 @@ Collect pylontech data via the console interface and Expose them in a prometheus
 * Make it more error resiliante. if possible, never crash the container from app level error
 * Add tests
 * Make command line arguments take precedence
-* V2 with object class
+* Mapping as json
