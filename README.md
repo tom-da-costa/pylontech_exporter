@@ -8,3 +8,10 @@ Collect pylontech data via the console interface and Expose them in a prometheus
 * Make it more error resiliante. if possible, never crash the container from app level error
 * Add tests
 * Make command line arguments take precedence
+
+## Get env
+
+```bash
+docker build . -t ghcr.io/tom-da-costa/pylontech_exporter:local
+docker run -it --rm -v $(pwd):/home/user/tests -w /home/user/tests ghcr.io/tom-da-costa/pylontech_exporter:local bash
+```
