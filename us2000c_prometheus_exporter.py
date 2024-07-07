@@ -74,103 +74,106 @@ class Battery:
     self.nbcells = 0
     self.cells = []
   def addCells(self, raw_bat_resp):
-    if raw_bat_resp == "":
-      raise EmptyStringError("Can't parse a empty string")
-    if "pylon>" in raw_bat_resp:
-      raise PylontechInvalidResponseError("Prompt sill present in the response (= no raw reponse)")    
-    if "Command completed successfully" not in raw_bat_resp:
-      raise PylontechInvalidResponseError("'Command completed successfully' absent from response")
-    if not raw_bat_resp.startswith('bat'):
-      raise PylontechInvalidResponseError("Wrong command")
-
-    lines = raw_bat_resp.replace('\r','').splitlines()
-    lines_array = []
-    nbcolonne = -1
-    for line in lines:
-      row = line.split()
-      if not line.startswith("Battery"):
-        row = re.sub('\. ', '.', re.sub('e S', 'e.S', line)).split()
-        nbcolonne = len(row)
-      lines_array.append(row)
-
-    if nbcolonne == -1 or len(lines_array) < 2 or (lines_array[1][0] != '@' and lines_array[2][0] != 'Battery') :
-      raise PylontechInvalidResponseError("Header not present or not at the right place")
-
-    # print("Fix Cloulomb slit ...") # Can be improve
-    for cell in range(0,15):
-      hours = lines_array[3+cell].pop(10)
-      lines_array[3+cell][9] = lines_array[3+cell][9] + " " + hours
-    # print('Done')
-
-    # print("Transform into dict ...")
-    cell_dicts=[]
-    colName = lines_array[2]
-    nbvalues = len(colName)
-    for cell in range(0,15):
-      cell_dict={}
-      for col in range(0,nbvalues):
-        cell_dict[colName[col]]=lines_array[3+cell][col]
-      # print(pwr_dict)
-      cell_dicts.append(cell_dict)
-    # print('Done')
+    cell_dicts = get_cell_dict_from_bat(raw_bat_resp)
     self.nbcells = len(cell_dicts)
-
     for bat_dict in pwr_dicts:
       self.cells.append(Battery(bat_dict))
   def getCells(self):
     return cells
     
-
 class Stack:
-  def __init__(self, raw_txt):
+  def __init__(self, raw_pwr_resp):
     self.batteries = []
-    if raw_txt == "":
-      raise EmptyStringError("Can't parse a empty string")
-    if "pylon>" in raw_txt:
-      raise PylontechInvalidResponseError("Prompt sill present in the response (= no raw reponse)")
-    if "Command completed successfully" not in raw_txt:
-      raise PylontechInvalidResponseError("'Command completed successfully' absent from response")
-    if not raw_txt.startswith('pwr'):
-      raise PylontechInvalidResponseError("Wrong command")
-
-    lines = raw_txt.replace('\r','').splitlines()
-    lines_array = []
-    nbcolonne = -1
-    for line in lines:
-      row = line.split()
-      if not line.startswith("Power"):
-        nbcolonne = len(row)
-      lines_array.append(row)
-
-    if nbcolonne == -1 or len(lines_array) < 3 or (lines_array[1][0] != '@' and lines_array[2][0] != 'Power') :
-      raise PylontechInvalidResponseError("Header not present or not at the right place")
-
-    nbpwr = 0
-    for pwr in lines_array[3+pwr:]:
-      if len(pwr) >= 8 and pwr[8] != 'Absent':
-        nbpwr += 1
-    self.nbbat = nbpwr
-
-    for pwr in range(0,nbpwr):
-      hours = lines_array[3+pwr].pop(14)
-      lines_array[3+pwr][13] = lines_array[3+pwr][13] + " " + hours
-
-    pwr_dicts=[]
-    colName = lines_array[2]
-    nbvalues = len(colName)
-    for pwr in range(0,nbpwr):
-      pwr_dict={}
-      for col in range(0,nbvalues):
-        pwr_dict[colName[col]]=lines_array[3+pwr][col]
-      # print(pwr_dict)
-      pwr_dicts.append(pwr_dict)
-    # print('Done')
-
-    for bat_dict in pwr_dicts:
+    bat_dicts = get_bat_dict_from_pwr(raw_pwr_resp)
+    for bat_dict in bat_dicts:
       self.batteries.append(Battery(bat_dict))
-    
   def getBats(self):
     return batteries
+
+def get_cell_dict_from_bat(raw_bat_resp):
+  if raw_bat_resp == "":
+    raise EmptyStringError("Can't parse a empty string")
+  if "pylon>" in raw_bat_resp:
+    raise PylontechInvalidResponseError("Prompt sill present in the response (= no raw reponse)")    
+  if "Command completed successfully" not in raw_bat_resp:
+    raise PylontechInvalidResponseError("'Command completed successfully' absent from response")
+  if not raw_bat_resp.startswith('bat'):
+    raise PylontechInvalidResponseError("Wrong command")
+
+  lines = raw_bat_resp.replace('\r','').splitlines()
+  lines_array = []
+  nbcolonne = -1
+  for line in lines:
+    row = line.split()
+    if not line.startswith("Battery"):
+      row = re.sub('\. ', '.', re.sub('e S', 'e.S', line)).split()
+      nbcolonne = len(row)
+    lines_array.append(row)
+
+  if nbcolonne == -1 or len(lines_array) < 2 or (lines_array[1][0] != '@' and lines_array[2][0] != 'Battery') :
+    raise PylontechInvalidResponseError("Header not present or not at the right place")
+
+  # print("Fix Cloulomb slit ...") # Can be improve
+  for cell in range(0,15):
+    hours = lines_array[3+cell].pop(10)
+    lines_array[3+cell][9] = lines_array[3+cell][9] + " " + hours
+  # print('Done')
+
+  # print("Transform into dict ...")
+  cell_dicts=[]
+  colName = lines_array[2]
+  nbvalues = len(colName)
+  for cell in range(0,15):
+    cell_dict={}
+    for col in range(0,nbvalues):
+      cell_dict[colName[col]]=lines_array[3+cell][col]
+    # print(pwr_dict)
+    cell_dicts.append(cell_dict)
+  # print('Done')
+  return cell_dicts
+
+def get_bat_dict_from_pwr(raw_pwr_resp):
+  if raw_pwr_resp == "":
+    raise EmptyStringError("Can't parse a empty string")
+  if "pylon>" in raw_pwr_resp:
+    raise PylontechInvalidResponseError("Prompt sill present in the response (= no raw reponse)")
+  if "Command completed successfully" not in raw_pwr_resp:
+    raise PylontechInvalidResponseError("'Command completed successfully' absent from response")
+  if not raw_pwr_resp.startswith('pwr'):
+    raise PylontechInvalidResponseError("Wrong command")
+
+  lines = raw_pwr_resp.replace('\r','').splitlines()
+  lines_array = []
+  nbcolonne = -1
+  for line in lines:
+    row = line.split()
+    if not line.startswith("Power"):
+      nbcolonne = len(row)
+    lines_array.append(row)
+
+  if nbcolonne == -1 or len(lines_array) < 3 or (lines_array[1][0] != '@' and lines_array[2][0] != 'Power') :
+    raise PylontechInvalidResponseError("Header not present or not at the right place")
+
+  nbpwr = 0
+  for pwr in lines_array[3+pwr:]:
+    if len(pwr) >= 8 and pwr[8] != 'Absent':
+      nbpwr += 1
+
+  for pwr in range(0,nbpwr):
+    hours = lines_array[3+pwr].pop(14)
+    lines_array[3+pwr][13] = lines_array[3+pwr][13] + " " + hours
+
+  pwr_dicts=[]
+  colName = lines_array[2]
+  nbvalues = len(colName)
+  for pwr in range(0,nbpwr):
+    pwr_dict={}
+    for col in range(0,nbvalues):
+      pwr_dict[colName[col]]=lines_array[3+pwr][col]
+    # print(pwr_dict)
+    pwr_dicts.append(pwr_dict)
+  # print('Done')
+  return pwr_dicts
 
 def exec_cmd(ser, cmd):
   if cmd == "":
