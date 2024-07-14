@@ -28,15 +28,19 @@ BATTERY_CELL_BAL = Enum('battery_cell_bal_state', 'Battery Cell BAL Properties S
 
 DEBUG = False
 
-class PylontechUnknownCommandError:
+def printDebug(msg):
+  if DEBUG:
+    print(msg)
+
+class PylontechUnknownCommandError(Exception):
   pass
-class PylontechInvalidCommandError:
+class PylontechInvalidCommandError(Exception):
   pass
-class EmptyStringError:
+class EmptyStringError(Exception):
   pass
-class ParsingError:
+class ParsingError(Exception):
   pass
-class PylontechInvalidResponseError:
+class PylontechInvalidResponseError(Exception):
   pass
 
 class Cell:
@@ -52,6 +56,19 @@ class Cell:
     self.soc = bat_dict['SOC']
     self.coulomb = bat_dict['Coulomb']
     self.BAL = bat_dict['BAL']
+  def print(self):
+    offset = "\t\t"
+    print(offset + "Cell:" + self.addr, end=", ")
+    print(offset + "Voltage:" + self.voltage, end=", ")
+    print(offset + "Current:" + self.current, end=", ")
+    print(offset + "Temp:" + self.temp, end=", ")
+    print(offset + "Base_State:" + self.base_state, end=", ")
+    print(offset + "Voltage_Status:" + self.voltage_status, end=", ")
+    print(offset + "Current_status:" + self.current_status, end=", ")
+    print(offset + "Temp_Status:" + self.temp_status, end=", ")
+    print(offset + "State_Of_Charge:" + self.soc, end=", ")
+    print(offset + "Coulomb:" + self.coulomb, end=", ")
+    print(offset + "BAL:" + self.BAL)
 
 class Battery:
   def __init__(self, bat_dict):
@@ -75,24 +92,49 @@ class Battery:
     self.mostemp_status = bat_dict['M.T.St']
     self.nbcells = 0
     self.cells = []
-  def addCells(self, raw_bat_resp):
-    cell_dicts = get_cell_dict_from_bat(raw_bat_resp)
+  def addCells(self, cell_dicts):
     self.nbcells = len(cell_dicts)
-    for bat_dict in pwr_dicts:
-      self.cells.append(Battery(bat_dict))
+    for cell_dict in cell_dicts:
+      self.cells.append(Cell(cell_dict))
   def getCells(self):
     return cells
+  def print(self):
+    offset = "\t"
+    print(offset + "Batterie:" + self.addr, end=", ")
+    print(offset + "Voltage:" + self.voltage, end=", ")
+    print(offset + "Current:" + self.current, end=", ")
+    print(offset + "Temp:" + self.temp, end=", ")
+    print(offset + "Temp_Low:" + self.temp_low, end=", ")
+    print(offset + "Temp_High:" + self.temp_high, end=", ")
+    print(offset + "Voltage_Low:" + self.voltage_low, end=", ")
+    print(offset + "Voltage_High:" + self.voltage_high, end=", ")
+    print(offset + "Base_State:" + self.base_state, end=", ")
+    print(offset + "Voltage_Status:" + self.voltage_status, end=", ")
+    print(offset + "Current_status:" + self.current_status, end=", ")
+    print(offset + "Temp_Status:" + self.temp_status, end=", ")
+    print(offset + "State_Of_Charge:" + self.soc, end=", ")
+    print(offset + "Time:" + self.time, end=", ")
+    print(offset + "Bv_Status:" + self.bv_status, end=", ")
+    print(offset + "Bt_Status:" + self.bt_status, end=", ")
+    print(offset + "MosTemp:" + self.mostemp, end=", ")
+    print(offset + "MosTemp_Status:" + self.mostemp_status, end=", ")
+    print(offset + "Cells:" + self.nbcells)
+    for cell in self.cells:
+      cell.print()
     
 class Stack:
-  def __init__(self, raw_pwr_resp):
+  def __init__(self, bat_dicts):
     self.batteries = []
-    bat_dicts = get_bat_dict_from_pwr(raw_pwr_resp)
     for bat_dict in bat_dicts:
       self.batteries.append(Battery(bat_dict))
   def getBats(self):
     return batteries
+  def print(self):
+    print("Stack :")
+    for bat in self.batteries:
+      bat.print()
 
-def get_cell_dict_from_bat(raw_bat_resp):
+def get_cells_dict_from_bat(raw_bat_resp):
   if raw_bat_resp == "":
     raise EmptyStringError("Can't parse a empty string")
   if "pylon>" in raw_bat_resp:
@@ -134,7 +176,7 @@ def get_cell_dict_from_bat(raw_bat_resp):
   # print('Done')
   return cell_dicts
 
-def get_bat_dict_from_pwr(raw_pwr_resp):
+def get_bats_dict_from_pwr(raw_pwr_resp):
   if raw_pwr_resp == "":
     raise EmptyStringError("Can't parse a empty string")
   if "pylon>" in raw_pwr_resp:
@@ -142,7 +184,7 @@ def get_bat_dict_from_pwr(raw_pwr_resp):
   if "Command completed successfully" not in raw_pwr_resp:
     raise PylontechInvalidResponseError("'Command completed successfully' absent from response")
   if not raw_pwr_resp.startswith('pwr'):
-    raise PylontechInvalidResponseError("Wrong command")
+    raise PylontechInvalidCommandError("Wrong command")
 
   lines = raw_pwr_resp.replace('\r','').splitlines()
   lines_array = []
@@ -157,7 +199,7 @@ def get_bat_dict_from_pwr(raw_pwr_resp):
     raise PylontechInvalidResponseError("Header not present or not at the right place")
 
   nbpwr = 0
-  for pwr in lines_array[3+pwr:]:
+  for pwr in lines_array[3:]:
     if len(pwr) >= 8 and pwr[8] != 'Absent':
       nbpwr += 1
 
@@ -191,34 +233,48 @@ def exec_cmd(ser, cmd):
     except:
       print("Error decoding caractere")
   if "Invalid Command" in resp:
-    raise PylontecInvalidCommandError("")
+    raise PylontecInvalidCommandError("Invalid Command")
   if "Unknown Command" in resp:
-    raise PylontechUnknownCommandError("")
+    raise PylontechUnknownCommandError("Unknown Command")
   if resp.endswith("\n$$\npylon>"):
     raise PylontechInvalidResponseError("Reponse do not end with \\n&&\\npylon>")
   resp = resp[0:-10]
   return resp
 
-def get_stack(ser):
-  resp = exec_cmd('pwr')
-  stack = Stack(resp)
-  for bat in stack.getBats():
-    time.sleep(0.1)
-    resp = exec_cmd('bat ' + bat.addr)
-    bat.addCells(resp)
+def get_stack(ser, getcells):
+  resp = exec_cmd(ser, 'pwr')
+  printDebug("pwr = " + resp)
+  bat_dicts = get_bats_dict_from_pwr(resp)
+  stack = Stack(bat_dicts)
+  if DEBUG:
+    stack.print()
+  if getcells:
+    for bat in stack.getBats():
+      time.sleep(0.1)
+      printDebug("Adding cell " + bat.addr)
+      try:
+        resp = exec_cmd(ser, 'bat ' + bat.addr)
+        printDebug('bat ' + bat.addr + ' : ' + resp)
+        cell_dicts = get_cells_dict_from_bat(resp)
+        printDebug('bat ' + bat.addr + ' dicts : ' + cell_dicts)
+        bat.addCells(cell_dicts)
+      except:
+        print("Failed to add bat " + bat.addr)
+  if DEBUG:
+    stack.print()
   return stack
 
 # Decorate function with metric.
 @UPDATE_METRICS_DURATION.time()
 def update_metrics(ser):
   try:
-    print("=================\nUpdate metrics===================")
-    print("1 : Get Battery stack data ...")
+    printDebug("1 : Get Battery stack data ...")
     stack = get_stack(ser)
     # print("Exporting infos as json for debug purpose")
     # with open("sample.json", "w") as outfile: 
     #   json.dump(stack.getDicts(), outfile)
-    print("2 : Update prometheus metrics ... "; end="")
+
+    printDebug("2 : Update prometheus metrics ... ", end="")
     for bat in stack.getBats():
       BATTERY_VOLTAGE.labels(index=bat.addr).set(float(bat.voltage)/1000)
       BATTERY_CURRENT.labels(index=bat.addr).set(float(bat.current)/1000)
@@ -235,7 +291,7 @@ def update_metrics(ser):
         BATTERY_CELL_COULOMB.labels(index=bat.addr,cell=cell.id).set(float(cell.coulomb.replace(' mAH','')))
         BATTERY_CELL_STATE.labels(index=bat.addr,cell=cell.id).state(cell.base_state)
         BATTERY_CELL_BAL.labels(index=bat.addr,cell=cell.id).state(cell.BAL)
-    print('Done')
+    printDebug('Done')
   except:
     print('Error during data collection, skip the collect.')
     COLLECT_DATA_FAILS.inc()
@@ -271,6 +327,10 @@ if __name__ == '__main__':
   # Generate some requests.
   print("Done")
   print("pylontech exporter started ! Now starting data gathering loop ...")
+  i = 0
   while True:
+    print("Updating metrics (" + i + ") ...", end=("" if not DEBUG else "\n"))
     update_metrics(ser)
+    print("Done" if not DEBUG else f"Done ({i})")
+    i += 1
     time.sleep(int(EXTRA_DELAY))
