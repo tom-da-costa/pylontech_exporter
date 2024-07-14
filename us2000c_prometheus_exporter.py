@@ -26,6 +26,8 @@ BATTERY_CELL_COULOMB = Gauge('battery_cell_coulomb', 'Battery Cell Coulomb (Aka 
 BATTERY_CELL_STATE = Enum('battery_cell_state', 'Battery Cell State', ['index','cell'], 'pylontech', states=['Idle', 'Charge', 'Dischg'])
 BATTERY_CELL_BAL = Enum('battery_cell_bal_state', 'Battery Cell BAL Properties State', ['index','cell'], 'pylontech', states=['N', 'Y'])
 
+DEBUG = False
+
 class PylontechUnknownCommandError:
   pass
 class PylontechInvalidCommandError:
@@ -210,13 +212,13 @@ def get_stack(ser):
 @UPDATE_METRICS_DURATION.time()
 def update_metrics(ser):
   try:
-    print("=================\nUpdate metrics")
-    print("Get Battery stack data ...")
+    print("=================\nUpdate metrics===================")
+    print("1 : Get Battery stack data ...")
     stack = get_stack(ser)
     # print("Exporting infos as json for debug purpose")
     # with open("sample.json", "w") as outfile: 
     #   json.dump(stack.getDicts(), outfile)
-    print("Update prometheus metrics ...")
+    print("2 : Update prometheus metrics ... "; end="")
     for bat in stack.getBats():
       BATTERY_VOLTAGE.labels(index=bat.addr).set(float(bat.voltage)/1000)
       BATTERY_CURRENT.labels(index=bat.addr).set(float(bat.current)/1000)
@@ -239,6 +241,8 @@ def update_metrics(ser):
     COLLECT_DATA_FAILS.inc()
 
 if __name__ == '__main__':
+  print("Starting pylontech exporter ...")
+  print("Parsing CLI arguments ...", end="")
   # Parse arguments
   parser = argparse.ArgumentParser(description='Pylontech US2000C Prometheus Exporter')
   parser.add_argument('--device_path', dest="devicepath", type=str, default='/dev/ttyUSB0', help='Path to the serial device')
@@ -246,17 +250,27 @@ if __name__ == '__main__':
   parser.add_argument('--port', dest="port", type=str, default='9094', help='Port to expose the metrics')
   parser.add_argument('--debug', dest="debug", action='store_true', help='Enable debug mode')
   args = parser.parse_args()
-
+  print("Done")
+  print("Configuration :")
   DEVICE_PATH = os.getenv('DEVICE_PATH', args.devicepath)
   EXTRA_DELAY = os.getenv('EXTRA_DELAY', args.extradelay)
   HTTP_PORT = os.getenv('HTTP_PORT', args.port)
   DEBUG = True if os.getenv('DEBUG', str(args.debug)).upper() == 'TRUE' else False
+  print("DEVICE_PATH = " + DEVICE_PATH)
+  print("EXTRA_DELAY = " + EXTRA_DELAY)
+  print("HTTP_PORT = " + HTTP_PORT)
+  print("DEBUG = " + str(DEBUG))
 
   # Init serial
+  print("Opening Serial port ...", end="")
   ser = serial.Serial(DEVICE_PATH, baudrate=115200)
+  print("Done")
   # Start up the server to expose the metrics.
+  print("Starting http server ...", end="")
   start_http_server(HTTP_PORT)
   # Generate some requests.
+  print("Done")
+  print("pylontech exporter started ! Now starting data gathering loop ...")
   while True:
     update_metrics(ser)
     time.sleep(int(EXTRA_DELAY))
