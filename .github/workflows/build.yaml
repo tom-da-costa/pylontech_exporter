@@ -72,3 +72,6 @@ jobs:
       #   if: ${{ github.ref == 'refs/heads/main' }}
       #   run: |
       #     docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.generate-docker-tag.outputs.DOCKER_TAG }}
+      - name: Clean up docker images
+        run: |
+          docker image prune -af
