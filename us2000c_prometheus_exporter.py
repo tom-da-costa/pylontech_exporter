@@ -25,6 +25,8 @@ BATTERY_CELL_COULOMB = Gauge('battery_cell_coulomb', 'Battery Cell Coulomb (Aka 
 BATTERY_CELL_STATE = Enum('battery_cell_state', 'Battery Cell State', ['index','cell'], 'pylontech', states=['Idle', 'Charge', 'Dischg'])
 BATTERY_CELL_BAL = Enum('battery_cell_bal_state', 'Battery Cell BAL Properties State', ['index','cell'], 'pylontech', states=['N', 'Y'])
 
+# DEBUG = False
+
 def exec_pwr(ser):
   while(ser.in_waiting != 0):
     ser.read()
@@ -190,6 +192,8 @@ def update_metrics(ser):
 
 
 if __name__ == '__main__':
+  print("Starting pylontech exporter ...")
+  print("Parsing CLI arguments ...", end="")
   # Parse arguments
   parser = argparse.ArgumentParser(description='Pylontech US2000C Prometheus Exporter')
   parser.add_argument('--device_path', dest="devicepath", type=str, default='/dev/ttyUSB0', help='Path to the serial device')
@@ -197,20 +201,34 @@ if __name__ == '__main__':
   parser.add_argument('--port', dest="port", type=str, default='9094', help='Port to expose the metrics')
   parser.add_argument('--debug', dest="debug", action='store_true', help='Enable debug mode')
   args = parser.parse_args()
-
+  print("Done")
+  print("Configuration :")
   DEVICE_PATH = os.getenv('DEVICE_PATH', args.devicepath)
   SOFT_DELAY = os.getenv('SOFT_DELAY', args.softdelay)
   HTTP_PORT = os.getenv('HTTP_PORT', args.port)
   DEBUG = True if os.getenv('DEBUG', str(args.debug)).upper() == 'TRUE' else False
+  print("DEVICE_PATH = " + DEVICE_PATH)
+  print("EXTRA_DELAY = " + EXTRA_DELAY)
+  print("HTTP_PORT = " + HTTP_PORT)
+  print("DEBUG = " + str(DEBUG))
 
   # Init serial
+  print("Opening Serial port ...", end="")
   ser = serial.Serial(DEVICE_PATH, baudrate=115200)
+  print("Done")
   # Start up the server to expose the metrics.
+  print("Starting http server ...", end="")
   start_http_server(HTTP_PORT)
+  print("Done")
   # Generate some requests.
+  print("pylontech exporter started ! Now starting data gathering loop ...")
+  i = 0
   while True:
     start = time.time()
+    print("Updating metrics (" + i + ") ...", end=("" if not DEBUG else "\n"))
     update_metrics(ser)
     end = time.time()
+    print("Done" if not DEBUG else f"Done ({i})(in {end - start} seconds)")
+    i += 1
     if (end - start) < SOFT_DELAY :
       time.sleep(SOFT_DELAY - (end - start))
