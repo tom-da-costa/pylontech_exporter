@@ -25,7 +25,20 @@ BATTERY_CELL_COULOMB = Gauge('battery_cell_coulomb', 'Battery Cell Coulomb (Aka 
 BATTERY_CELL_STATE = Enum('battery_cell_state', 'Battery Cell State', ['index','cell'], 'pylontech', states=['Idle', 'Charge', 'Dischg'])
 BATTERY_CELL_BAL = Enum('battery_cell_bal_state', 'Battery Cell BAL Properties State', ['index','cell'], 'pylontech', states=['N', 'Y'])
 
-# DEBUG = False
+DEBUG = False
+def printDebug(msg,end="\n",start=""):
+  if DEBUG:
+    print("[DEBUG] " + start,end="")
+    print(msg,end=end)
+
+class PylontechUnknownCommandError(Exception):
+  pass
+class PylontechInvalidCommandError(Exception):
+  pass
+class PylontechInvalidResponseError(Exception):
+  pass
+class ParsingError(Exception):
+  pass
 
 def exec_pwr(ser):
   while(ser.in_waiting != 0):
@@ -144,31 +157,33 @@ def parse_command_bat(raw_txt):
 # print('Done')
   return cell_dicts
 
-
-def append_cell_voltage(ser,pwr_dicts):
-  for pwr_dict in pwr_dicts:
-    print("Process bat " + pwr_dict['Power'])
-    resp = exec_bat(ser,pwr_dict['Power'])
-    cell_dicts = parse_command_bat(resp)
-    pwr_dict['Cells'] = cell_dicts
-
 # Decorate function with metric.
 @UPDATE_METRICS_DURATION.time()
 def update_metrics(ser):
   try:
-    print("=================\nGetting pwrs raw infos")
-    resp = exec_pwr(ser)
-    #print(resp)
-    print("Parsing pwrs raw infos")
-    pwr_dicts = parse_command_pwr(resp)
-    #print(pwr_dicts)
-    print("Add cells infos")
-    append_cell_voltage(ser,pwr_dicts)
-  # print(pwr_dicts)
-    print("Exporting infos as json for debug purpose")
-    with open("sample.json", "w") as outfile: 
-      json.dump(pwr_dicts, outfile)
-    print("Update prometheus metrics")
+    print("1 : Get Battery stack data ... ", end="\n" if DEBUG else "")
+    printDebug("1.1.1 : Executing pwr command ... ")
+    pwr_resp = exec_pwr(ser)
+    printDebug(pwr_resp,start="pwr_resp = ")
+    printDebug("1.1.2 : Parsing pwrs raw infos ... ")
+    pwr_dicts = parse_command_pwr(pwr_resp)
+    printDebug(pwr_dicts,start="pwr_dicts = ")
+    printDebug("1.2: Add cells infos")
+    for pwr_dict in pwr_dicts:
+      idbat = pwr_dict['Power']
+      printDebug(f"Get bat {idbat} infos ...")
+      bat_resp = exec_bat(ser,idbat)
+      printDebug(bat_resp,start=f"bat_resp({idbat}) = ")
+      printDebug(f"Parsing bat {idbat} infos ...")
+      cell_dicts = parse_command_bat(bat_resp)
+      printDebug(cell_dicts,start=f"cell_dicts({idbat}) = ")
+      pwr_dict['Cells'] = cell_dicts
+    printDebug(pwr_dicts,start="pwr_dicts = ")
+    print('Done')
+    # print("Exporting infos as json for debug purpose")
+    # with open("sample.json", "w") as outfile: 
+    #   json.dump(pwr_dicts, outfile)
+    print("2 : Update prometheus metrics ... ", end="\n" if DEBUG else "")
     for pwr_dict in pwr_dicts:
       BATTERY_VOLTAGE.labels(index=pwr_dict['Power']).set(float(pwr_dict['Volt'])/1000)
       BATTERY_CURRENT.labels(index=pwr_dict['Power']).set(float(pwr_dict['Curr'])/1000)
@@ -208,7 +223,7 @@ if __name__ == '__main__':
   HTTP_PORT = os.getenv('HTTP_PORT', args.port)
   DEBUG = True if os.getenv('DEBUG', str(args.debug)).upper() == 'TRUE' else False
   print("DEVICE_PATH = " + DEVICE_PATH)
-  print("EXTRA_DELAY = " + EXTRA_DELAY)
+  print("SOFT_DELAY = " + SOFT_DELAY)
   print("HTTP_PORT = " + HTTP_PORT)
   print("DEBUG = " + str(DEBUG))
 
@@ -225,10 +240,10 @@ if __name__ == '__main__':
   i = 0
   while True:
     start = time.time()
-    print("Updating metrics (" + i + ") ...", end=("" if not DEBUG else "\n"))
+    print("Updating metrics (" + i + ") ...")
     update_metrics(ser)
     end = time.time()
-    print("Done" if not DEBUG else f"Done ({i})(in {end - start} seconds)")
+    print(f"Update Done ({i})(in {end - start} seconds)")
     i += 1
     if (end - start) < SOFT_DELAY :
       time.sleep(SOFT_DELAY - (end - start))
