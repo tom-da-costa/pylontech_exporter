@@ -193,13 +193,13 @@ if __name__ == '__main__':
   # Parse arguments
   parser = argparse.ArgumentParser(description='Pylontech US2000C Prometheus Exporter')
   parser.add_argument('--device_path', dest="devicepath", type=str, default='/dev/ttyUSB0', help='Path to the serial device')
-  parser.add_argument('--extra_delay', dest="extradelay", type=str, default='7', help='Extra delay between each data collection')
+  parser.add_argument('--soft_delay', dest="softdelay", type=str, default='10', help='Soft delay between each data collection')
   parser.add_argument('--port', dest="port", type=str, default='9094', help='Port to expose the metrics')
   parser.add_argument('--debug', dest="debug", action='store_true', help='Enable debug mode')
   args = parser.parse_args()
 
   DEVICE_PATH = os.getenv('DEVICE_PATH', args.devicepath)
-  EXTRA_DELAY = os.getenv('EXTRA_DELAY', args.extradelay)
+  SOFT_DELAY = os.getenv('SOFT_DELAY', args.softdelay)
   HTTP_PORT = os.getenv('HTTP_PORT', args.port)
   DEBUG = True if os.getenv('DEBUG', str(args.debug)).upper() == 'TRUE' else False
 
@@ -209,5 +209,8 @@ if __name__ == '__main__':
   start_http_server(HTTP_PORT)
   # Generate some requests.
   while True:
+    start = time.time()
     update_metrics(ser)
-    time.sleep(int(EXTRA_DELAY))
+    end = time.time()
+    if (end - start) < SOFT_DELAY :
+      time.sleep(SOFT_DELAY - (end - start))
