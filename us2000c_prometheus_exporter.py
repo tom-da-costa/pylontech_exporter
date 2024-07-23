@@ -40,32 +40,6 @@ class PylontechInvalidResponseError(Exception):
 class ParsingError(Exception):
   pass
 
-def exec_pwr(ser):
-  while(ser.in_waiting != 0):
-    ser.read()
-  ser.write(b'pwr\n')
-  time.sleep(0.5)
-  resp = ""
-  while(ser.in_waiting != 0):
-    try:
-      resp += ser.read().decode(encoding="ascii")
-    except:
-      print("Error decoding caractere -> skip")
-  return resp
-
-def exec_bat(addr):
-  while(ser.in_waiting != 0):
-    ser.read()
-  ser.write(bytes("bat " + addr + "\n", 'ascii'))
-  time.sleep(0.5)
-  resp = ""
-  while(ser.in_waiting != 0):
-    try:
-      resp += ser.read().decode(encoding="ascii")
-    except:
-      print("Error decoding caractere -> skip")
-  return resp
-
 def exec_cmd(ser, cmd):
   if cmd == "":
     raise PylontechInvalidCommandError("The given command is empty")
@@ -102,8 +76,6 @@ def parse_command_pwr(raw_txt):
   assert(raw_array[0][0] == 'pwr')
   assert(raw_array[1][0] == '@')
   assert(raw_array[2][0] == 'Power')
-  assert(raw_array[-2][0] == '$$')
-  assert(raw_array[-1][0] == 'pylon>')
 # print("Done")
 
 # print("Get Nb Pwr ...")
@@ -147,8 +119,6 @@ def parse_command_bat(raw_txt):
   #assert(raw_array[0][0] == ('bat' + pwr_dict.Power))
   assert(raw_array[1][0] == '@')
   assert(raw_array[2][0] == 'Battery')
-  assert(raw_array[-2][0] == '$$')
-  assert(raw_array[-1][0] == 'pylon>')
 # print("Done")
 
   tmp = raw_array[2].pop(11)
@@ -185,7 +155,7 @@ def update_metrics(ser):
   try:
     print("1 : Get Battery stack data ... ", end="\n" if DEBUG else "")
     printDebug("1.1.1 : Executing pwr command ... ")
-    pwr_resp = exec_pwr(ser)
+    pwr_resp = exec_cmd(ser,"pwr")
     printDebug(pwr_resp,start="pwr_resp = ")
     printDebug("1.1.2 : Parsing pwrs raw infos ... ")
     pwr_dicts = parse_command_pwr(pwr_resp)
@@ -194,7 +164,7 @@ def update_metrics(ser):
     for pwr_dict in pwr_dicts:
       idbat = pwr_dict['Power']
       printDebug(f"Get bat {idbat} infos ...")
-      bat_resp = exec_bat(ser,idbat)
+      bat_resp = exec_cmd(ser,'bat ' + idbat) # to f"bat {idbat}" ?
       printDebug(bat_resp,start=f"bat_resp({idbat}) = ")
       printDebug(f"Parsing bat {idbat} infos ...")
       cell_dicts = parse_command_bat(bat_resp)
