@@ -66,6 +66,28 @@ def exec_bat(addr):
       print("Error decoding caractere -> skip")
   return resp
 
+def exec_cmd(ser, cmd):
+  if cmd == "":
+    raise PylontechInvalidCommandError("The given command is empty")
+  while(ser.in_waiting != 0):
+    ser.read()
+  ser.write(bytes(cmd + "\n", 'ascii'))
+  time.sleep(0.5)
+  resp = ""
+  while(ser.in_waiting != 0):
+    try:
+      resp += ser.read().decode(encoding="ascii")
+    except:
+      raise ParsingError("Error decoding caractere")
+  if "Invalid Command" in resp:
+    raise PylontechInvalidCommandError("Invalid Command")
+  if "Unknown Command" in resp:
+    raise PylontechUnknownCommandError("Unknown Command")
+  if not resp.endswith("\n$$\npylon>"):
+    raise PylontechInvalidResponseError("Reponse do not end with \\n&&\\npylon>")
+  resp = resp[0:-10]
+  return resp
+
 def parse_command_pwr(raw_txt):
 # print("Parse into array ...")
   lines = raw_txt.replace('\r','').splitlines()
