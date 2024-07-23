@@ -224,7 +224,7 @@ def exec_cmd(ser, cmd):
     raise EmptyStringError("The given command is empty")
   while(ser.in_waiting != 0):
     ser.read()
-  ser.write(bytes(cmd + "\n"))
+  ser.write(bytes(cmd + "\n", 'ascii'))
   time.sleep(0.5)
   resp = ""
   while(ser.in_waiting != 0):
@@ -236,12 +236,12 @@ def exec_cmd(ser, cmd):
     raise PylontecInvalidCommandError("Invalid Command")
   if "Unknown Command" in resp:
     raise PylontechUnknownCommandError("Unknown Command")
-  if resp.endswith("\n$$\npylon>"):
+  if not resp.endswith("\n$$\npylon>"):
     raise PylontechInvalidResponseError("Reponse do not end with \\n&&\\npylon>")
   resp = resp[0:-10]
   return resp
 
-def get_stack(ser, getcells):
+def get_stack(ser, getcells=True):
   resp = exec_cmd(ser, 'pwr')
   printDebug("pwr = " + resp)
   bat_dicts = get_bats_dict_from_pwr(resp)

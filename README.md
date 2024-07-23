@@ -9,3 +9,10 @@ Collect pylontech data via the console interface and Expose them in a prometheus
 * Add tests
 * Make command line arguments take precedence
 * Mapping as json
+
+## Test local
+
+```bash
+docker build . -t pe:test
+docker run --rm -it -v $(pwd):/app -w /app pe:test bash
+```
