@@ -53,6 +53,7 @@ def exec_cmd(ser, cmd):
       resp += ser.read().decode(encoding="ascii")
     except:
       raise ParsingError("Error decoding caractere")
+  printDebug("raw response : " + resp)
   if "Invalid Command" in resp:
     raise PylontechInvalidCommandError("Invalid Command")
   if "Unknown Command" in resp:
