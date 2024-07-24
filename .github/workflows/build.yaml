@@ -59,7 +59,8 @@ jobs:
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
+          # push: ${{ github.ref == 'refs/heads/main' && 'true' || 'false' }}
+          push: 'true'
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -72,3 +73,6 @@ jobs:
       #   if: ${{ github.ref == 'refs/heads/main' }}
       #   run: |
       #     docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.generate-docker-tag.outputs.DOCKER_TAG }}
+      - name: Clean up docker images
+        run: |
+          docker image prune -af
