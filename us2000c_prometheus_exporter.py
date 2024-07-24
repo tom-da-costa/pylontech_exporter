@@ -215,8 +215,8 @@ if __name__ == '__main__':
   HTTP_PORT = int(os.getenv('HTTP_PORT', args.port))
   DEBUG = True if os.getenv('DEBUG', str(args.debug)).upper() == 'TRUE' else False
   print("DEVICE_PATH = " + DEVICE_PATH)
-  print("SOFT_DELAY = " + SOFT_DELAY)
-  print("HTTP_PORT = " + HTTP_PORT)
+  print("SOFT_DELAY = " + str(SOFT_DELAY))
+  print("HTTP_PORT = " + str(HTTP_PORT))
   print("DEBUG = " + str(DEBUG))
 
   # Init serial
