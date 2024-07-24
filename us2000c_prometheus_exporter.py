@@ -193,8 +193,9 @@ def update_metrics(ser):
         BATTERY_CELL_STATE.labels(index=pwr_dict['Power'],cell=cell_dict['Battery']).state(cell_dict['Base.State'])
         BATTERY_CELL_BAL.labels(index=pwr_dict['Power'],cell=cell_dict['Battery']).state(cell_dict['BAL'])
     print('Done')
-  except:
+  except Exception as e:
     print('Error during data collection, skip the collect.')
+    print(e)
     COLLECT_DATA_FAILS.inc()
 
 
