@@ -232,7 +232,7 @@ if __name__ == '__main__':
   i = 0
   while True:
     start = time.time()
-    print("Updating metrics (" + i + ") ...")
+    print(f"Updating metrics ({i}) ...")
     update_metrics(ser)
     end = time.time()
     print(f"Update Done ({i})(in {end - start} seconds)")
