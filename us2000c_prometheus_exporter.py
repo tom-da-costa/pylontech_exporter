@@ -59,9 +59,8 @@ def exec_cmd(ser, cmd):
   if "Unknown Command" in resp:
     raise PylontechUnknownCommandError("Unknown Command")
   if not resp.endswith("\r\n\r$$\r\n\rpylon>"):
-    print([ item.encode('ascii').hex() for item in resp[-30:] ])
     raise PylontechInvalidResponseError("Reponse do not end with \\n$$\\npylon>")
-  resp = resp[0:-10]
+  resp = resp[0:-14]
   return resp
 
 def parse_command_pwr(raw_txt):
