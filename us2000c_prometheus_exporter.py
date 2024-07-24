@@ -211,8 +211,8 @@ if __name__ == '__main__':
   print("Done")
   print("Configuration :")
   DEVICE_PATH = os.getenv('DEVICE_PATH', args.devicepath)
-  SOFT_DELAY = os.getenv('SOFT_DELAY', args.softdelay)
-  HTTP_PORT = os.getenv('HTTP_PORT', args.port)
+  SOFT_DELAY = int(os.getenv('SOFT_DELAY', args.softdelay))
+  HTTP_PORT = int(os.getenv('HTTP_PORT', args.port))
   DEBUG = True if os.getenv('DEBUG', str(args.debug)).upper() == 'TRUE' else False
   print("DEVICE_PATH = " + DEVICE_PATH)
   print("SOFT_DELAY = " + SOFT_DELAY)
