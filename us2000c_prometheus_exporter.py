@@ -70,7 +70,7 @@ def parse_command_pwr(raw_txt):
   for line in lines:
     row = line.split()
     raw_array.append(row)
-  print(raw_array)
+  # print(raw_array)
 # print('Done')
 
 # print("Check Array ...", end ="")
@@ -240,4 +240,5 @@ if __name__ == '__main__':
     print(f"Update Done ({i})(in {end - start} seconds)")
     i += 1
     if (end - start) < SOFT_DELAY :
+      print(f"Waiting {end - start} seconds")
       time.sleep(SOFT_DELAY - (end - start))
