@@ -59,7 +59,8 @@ def exec_cmd(ser, cmd):
   if "Unknown Command" in resp:
     raise PylontechUnknownCommandError("Unknown Command")
   if not resp.endswith("\n$$\npylon>"):
-    raise PylontechInvalidResponseError("Reponse do not end with \\n&&\\npylon>")
+    print(resp[-30:])
+    raise PylontechInvalidResponseError("Reponse do not end with \\n$$\\npylon>")
   resp = resp[0:-10]
   return resp
 
