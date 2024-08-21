@@ -240,5 +240,5 @@ if __name__ == '__main__':
     print(f"Update Done ({i})(in {end - start} seconds)")
     i += 1
     if (end - start) < SOFT_DELAY :
-      print(f"Waiting {end - start} seconds")
+      print(f"Waiting {SOFT_DELAY - (end - start)} seconds")
       time.sleep(SOFT_DELAY - (end - start))
