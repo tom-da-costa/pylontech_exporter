@@ -1,7 +1,10 @@
 FROM ubuntu:24.04
 
 RUN apt update && \
-    apt upgrade -y
+    apt upgrade -y && \
+    apt install -y --no-install-recommends curl ca-certificates
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
