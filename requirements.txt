@@ -1,2 +1,0 @@
-prometheus_client==0.20.0
-pyserial==3.5
