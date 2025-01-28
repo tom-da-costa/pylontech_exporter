@@ -96,4 +96,8 @@ Battery data show - bat [pwr][index]
 $$
 pylon>"""
 
-bat_raw_txt_4 = "bit 1\n@\nUnknown command 'bit' - try 'help'\n$$\npylon>"
+bat_raw_txt_4 = """bit 1
+@
+Unknown command 'bit' - try 'help'
+$$
+pylon>"""
