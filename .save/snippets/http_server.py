@@ -1,5 +1,6 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Endpoint "/hello" : Exécute la fonction hello()
@@ -35,11 +36,13 @@ class RequestHandler(BaseHTTPRequestHandler):
     def home(self):
         return "<html><body><h1>Welcome to the Home Page</h1></body></html>"
 
+
 def run_server(port=8000):
-    server_address = ('', port)
+    server_address = ("", port)
     httpd = HTTPServer(server_address, RequestHandler)
-    print(f'Starting server on port {port}...')
+    print(f"Starting server on port {port}...")
     httpd.serve_forever()
+
 
 if __name__ == "__main__":
     run_server()
