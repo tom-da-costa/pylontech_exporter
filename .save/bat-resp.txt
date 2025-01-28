@@ -49,3 +49,9 @@ Usage:
 Battery data show - bat [pwr][index]
 $$
 pylon>
+
+pylon>bit 1
+@
+Unknown command 'bit' - try 'help'
+$$
+pylon>

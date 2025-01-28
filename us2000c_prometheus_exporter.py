@@ -137,7 +137,7 @@ class PylontechInvalidResponseError(Exception):
     pass
 
 
-class ParsingError(Exception):
+class DecodeError(Exception):
     pass
 
 
@@ -147,110 +147,93 @@ def exec_cmd(ser, cmd):
     while ser.in_waiting != 0:
         ser.read()
     ser.write(bytes(cmd + "\n", "ascii"))
-    time.sleep(0.5)
+    time.sleep(0.75)
     resp = ""
     while ser.in_waiting != 0:
         try:
             resp += ser.read().decode(encoding="ascii")
         except:
-            raise ParsingError("Error decoding caractere")
+            raise DecodeError("Error decoding caractere")
     printDebug("raw response : " + resp)
     if "Invalid Command" in resp:
-        raise PylontechInvalidCommandError("Invalid Command")
+        raise PylontechInvalidCommandError(f"Invalid Command ({cmd})")
     if "Unknown Command" in resp:
-        raise PylontechUnknownCommandError("Unknown Command")
-    if not resp.endswith("\r\n\r$$\r\n\rpylon>"):
-        raise PylontechInvalidResponseError("Reponse do not end with \\n$$\\npylon>")
-    resp = resp[0:-14]
+        raise PylontechUnknownCommandError(f"Unknown Command ({cmd})")
+    if not resp.endswith("pylon>"):
+        raise PylontechInvalidResponseError(f"Reponse do not end with pylon>. resp : {resp}")
+    if not "@" in resp and not "@" in resp:
+        raise PylontechInvalidResponseError(f"Invalid format, not @ and $$ present in response. resp : {resp}")
     return resp
 
+def extract_response_from_raw(raw_resp):
+    raw_resp_filtered = raw_resp.replace("\r", "")
+    start = raw_resp_filtered.find("@\n")
+    end = raw_resp_filtered.find("\n$$")
+    if start == -1 or end == -1:
+        raise PylontechInvalidResponseError(f"Invalid format, not @ and $$ present in response. resp : {raw_resp}")
+    return raw_resp_filtered[start:end]
 
-def parse_command_pwr(raw_txt):
-    # print("Parse into array ...")
-    lines = raw_txt.replace("\r", "").splitlines()
-    raw_array = []
+def parse_pwr_response(resp):
+    lines = resp.splitlines()
+    lines_tokens = []
     for line in lines:
         row = line.split()
-        raw_array.append(row)
-    # print(raw_array)
-    # print('Done')
+        lines_tokens.append(row)
 
-    # print("Check Array ...", end ="")
-    assert raw_array[0][0] == "pwr"
-    assert raw_array[1][0] == "@"
-    assert raw_array[2][0] == "Power"
-    # print("Done")
+    assert lines_tokens[0][0] == "Power"
 
-    # print("Get Nb Pwr ...")
     nbpwr = 0
     for pwr in range(0, 16):
-        if raw_array[3 + pwr][8] != "Absent":
+        if lines_tokens[1 + pwr][8] != "Absent":
             nbpwr += 1
         else:
             break
-    # print("NB Batteries = " + str(nbpwr) + "\nDone")
 
-    # print("Fix Time slit ...") # Can be improve
     for pwr in range(0, nbpwr):
-        hours = raw_array[3 + pwr].pop(14)
-        raw_array[3 + pwr][13] = raw_array[3 + pwr][13] + " " + hours
-    # print('Done')
+        hours = lines_tokens[1 + pwr].pop(14)
+        lines_tokens[1 + pwr][13] = lines_tokens[1 + pwr][13] + " " + hours
 
-    # print("Transform into dict ...")
     pwr_dicts = []
-    colName = raw_array[2]
+    colName = lines_tokens[0]
     nbvalues = len(colName)
     for pwr in range(0, nbpwr):
         pwr_dict = {}
         for col in range(0, nbvalues):
-            pwr_dict[colName[col]] = raw_array[3 + pwr][col]
-        # print(pwr_dict)
+            pwr_dict[colName[col]] = lines_tokens[1 + pwr][col]
         pwr_dicts.append(pwr_dict)
-    # print('Done')
     return pwr_dicts
 
 
-def parse_command_bat(raw_txt):
-    # print("Parse into array ...")
-    lines = raw_txt.replace("\r", "").splitlines()
-    raw_array = []
+def parse_bat_response(resp):
+    lines = resp.replace("\r", "").splitlines()
+    lines_tokens = []
     for line in lines:
         row = line.split()
-        raw_array.append(row)
-    # print(raw_array)
-    # print('Done')
-    # print("Check Array ...", end ="")
-    # assert(raw_array[0][0] == ('bat' + pwr_dict.Power))
-    assert raw_array[1][0] == "@"
-    assert raw_array[2][0] == "Battery"
-    # print("Done")
+        lines_tokens.append(row)
 
-    tmp = raw_array[2].pop(11)
-    raw_array[2][10] = raw_array[2][10] + tmp
-    tmp = raw_array[2].pop(9)
-    raw_array[2][8] = raw_array[2][8] + tmp
-    tmp = raw_array[2].pop(7)
-    raw_array[2][6] = raw_array[2][6] + tmp
-    tmp = raw_array[2].pop(5)
-    raw_array[2][4] = raw_array[2][4] + "." + tmp
+    assert lines_tokens[0][0] == "Battery"
 
-    # print("Fix Cloulomb slit ...") # Can be improve
+    tmp = lines_tokens[0].pop(11)
+    lines_tokens[0][10] = lines_tokens[0][10] + tmp
+    tmp = lines_tokens[0].pop(9)
+    lines_tokens[0][8] = lines_tokens[0][8] + tmp
+    tmp = lines_tokens[0].pop(7)
+    lines_tokens[0][6] = lines_tokens[0][6] + tmp
+    tmp = lines_tokens[0].pop(5)
+    lines_tokens[0][4] = lines_tokens[0][4] + "." + tmp
+
     for cell in range(0, 15):
-        hours = raw_array[3 + cell].pop(10)
-        raw_array[3 + cell][9] = raw_array[3 + cell][9] + " " + hours
-    # print('Done')
+        hours = lines_tokens[1 + cell].pop(10)
+        lines_tokens[1 + cell][9] = lines_tokens[1 + cell][9] + " " + hours
 
-    # print("Transform into dict ...")
     cell_dicts = []
-    colName = raw_array[2]
+    colName = lines_tokens[0]
     nbvalues = len(colName)
     for cell in range(0, 15):
         cell_dict = {}
         for col in range(0, nbvalues):
-            cell_dict[colName[col]] = raw_array[3 + cell][col]
-        # print(pwr_dict)
+            cell_dict[colName[col]] = lines_tokens[1 + cell][col]
         cell_dicts.append(cell_dict)
-    # print('Done')
     return cell_dicts
 
 
@@ -259,22 +242,39 @@ def parse_command_bat(raw_txt):
 def update_metrics(ser):
     try:
         print("1 : Get Battery stack data ... ", end="\n" if DEBUG else "")
+        printDebug("1.2 : Get battery infos")
         printDebug("1.1.1 : Executing pwr command ... ")
-        pwr_resp = exec_cmd(ser, "pwr")
-        printDebug(pwr_resp, start="pwr_resp = ")
-        printDebug("1.1.2 : Parsing pwrs raw infos ... ")
-        pwr_dicts = parse_command_pwr(pwr_resp)
+        pwr_raw_resp = exec_cmd(ser, "pwr")
+        printDebug(pwr_raw_resp, start="pwr_raw_resp = ")
+
+        printDebug("1.1.2 : Extract response from raw response ... ")
+        pwr_resp = extract_response_from_raw(pwr_raw_resp)
+        printDebug(pwr_raw_resp, start="pwr_resp = ")
+
+        printDebug("1.1.3 : Parsing pwrs raw infos ... ")
+        pwr_dicts = parse_pwr_response(pwr_resp)
         printDebug(pwr_dicts, start="pwr_dicts = ")
-        printDebug("1.2: Add cells infos")
+
+        printDebug("1.2 : Add cells infos")
         for pwr_dict in pwr_dicts:
             idbat = pwr_dict["Power"]
-            printDebug(f"Get bat {idbat} infos ...")
-            bat_resp = exec_cmd(ser, "bat " + idbat)  # to f"bat {idbat}" ?
-            printDebug(bat_resp, start=f"bat_resp({idbat}) = ")
-            printDebug(f"Parsing bat {idbat} infos ...")
-            cell_dicts = parse_command_bat(bat_resp)
-            printDebug(cell_dicts, start=f"cell_dicts({idbat}) = ")
-            pwr_dict["Cells"] = cell_dicts
+            try:
+                printDebug(f"1.2.1 : Get bat {idbat} infos ...")
+                bat_raw_resp = exec_cmd(ser, "bat " + idbat)  # to f"bat {idbat}" ?
+                printDebug(bat_raw_resp, start=f"bat_raw_resp({idbat}) = ")
+
+                printDebug("1.1.2 : Extract response from raw response ... ")
+                bat_resp = extract_response_from_raw(bat_resp)
+                printDebug(bat_resp, start=f"bat_resp({idbat}) = ")
+
+                printDebug(f"1.2.3: Parsing bat {idbat} infos ...")
+                cell_dicts = parse_bat_response(bat_resp)
+                printDebug(cell_dicts, start=f"cell_dicts({idbat}) = ")
+                pwr_dict["Cells"] = cell_dicts
+            except Exception as e:
+                print(f"Error while collecting cells of battery {idbat}. Skip bat {idbat}")
+                print(e)
+                COLLECT_DATA_FAILS.inc()
         printDebug(pwr_dicts, start="pwr_dicts = ")
         print("Done")
         # print("Exporting infos as json for debug purpose")
@@ -301,28 +301,29 @@ def update_metrics(ser):
             BATTERY_TEMP.labels(index=pwr_dict["Power"]).set(
                 float(pwr_dict["Tempr"]) / 1000
             )
-            for cell_dict in pwr_dict["Cells"]:
-                BATTERY_CELL_VOLTAGE.labels(
-                    index=pwr_dict["Power"], cell=cell_dict["Battery"]
-                ).set(float(cell_dict["Volt"]) / 1000)
-                BATTERY_CELL_CURRENT.labels(
-                    index=pwr_dict["Power"], cell=cell_dict["Battery"]
-                ).set(float(cell_dict["Curr"]) / 1000)
-                BATTERY_CELL_TEMP.labels(
-                    index=pwr_dict["Power"], cell=cell_dict["Battery"]
-                ).set(float(cell_dict["Tempr"]) / 1000)
-                BATTERY_CELL_SOC.labels(
-                    index=pwr_dict["Power"], cell=cell_dict["Battery"]
-                ).set(float(cell_dict["SOC"].replace("%", "")))
-                BATTERY_CELL_COULOMB.labels(
-                    index=pwr_dict["Power"], cell=cell_dict["Battery"]
-                ).set(float(cell_dict["Coulomb"].replace(" mAH", "")))
-                BATTERY_CELL_STATE.labels(
-                    index=pwr_dict["Power"], cell=cell_dict["Battery"]
-                ).state(cell_dict["Base.State"])
-                BATTERY_CELL_BAL.labels(
-                    index=pwr_dict["Power"], cell=cell_dict["Battery"]
-                ).state(cell_dict["BAL"])
+            if "Cells" in pwr_dict.keys():
+                for cell_dict in pwr_dict["Cells"]:
+                    BATTERY_CELL_VOLTAGE.labels(
+                        index=pwr_dict["Power"], cell=cell_dict["Battery"]
+                    ).set(float(cell_dict["Volt"]) / 1000)
+                    BATTERY_CELL_CURRENT.labels(
+                        index=pwr_dict["Power"], cell=cell_dict["Battery"]
+                    ).set(float(cell_dict["Curr"]) / 1000)
+                    BATTERY_CELL_TEMP.labels(
+                        index=pwr_dict["Power"], cell=cell_dict["Battery"]
+                    ).set(float(cell_dict["Tempr"]) / 1000)
+                    BATTERY_CELL_SOC.labels(
+                        index=pwr_dict["Power"], cell=cell_dict["Battery"]
+                    ).set(float(cell_dict["SOC"].replace("%", "")))
+                    BATTERY_CELL_COULOMB.labels(
+                        index=pwr_dict["Power"], cell=cell_dict["Battery"]
+                    ).set(float(cell_dict["Coulomb"].replace(" mAH", "")))
+                    BATTERY_CELL_STATE.labels(
+                        index=pwr_dict["Power"], cell=cell_dict["Battery"]
+                    ).state(cell_dict["Base.State"])
+                    BATTERY_CELL_BAL.labels(
+                        index=pwr_dict["Power"], cell=cell_dict["Battery"]
+                    ).state(cell_dict["BAL"])
         print("Done")
     except Exception as e:
         print("Error during data collection, skip the collect.")
