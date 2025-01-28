@@ -1,0 +1,44 @@
+pylon>
+pylon>pwr
+@
+Power Volt   Curr   Tempr  Tlow   Thigh  Vlow   Vhigh  Base.St  Volt.St  Curr.St  Temp.St  Coulomb  Time                 B.V.St   B.T.St   MosTempr M.T.St  
+1     51209  0      28900  26200  26800  3404   3419   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:28  Normal   Normal  27500    Normal  
+2     51202  0      28400  26400  27000  3406   3419   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:27  Normal   Normal  27700    Normal  
+3     51228  0      30000  26000  27000  3399   3418   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:27  Normal   Normal   -        -       
+4     51203  0      28200  25600  26000  3393   3416   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:27  Normal   Normal  27300    Normal  
+5     51204  0      28400  25500  25900  3407   3415   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:28  Normal   Normal  27000    Normal  
+6     51202  0      27800  24900  25000  3396   3417   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:27  Normal   Normal  26300    Normal  
+7     -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+8     -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+9     -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+10    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+11    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+12    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+13    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+14    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+15    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+16    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+Command completed successfully
+$$
+pylon>pwr
+@
+Power Volt   Curr   Tempr  Tlow   Thigh  Vlow   Vhigh  Base.St  Volt.St  Curr.St  Temp.St  Coulomb  Time                 B.V.St   B.T.St   MosTempr M.T.St  
+1     51208  0      28900  26200  26800  3404   3419   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:30  Normal   Normal  27500    Normal  
+2     51192  0      28400  26400  27000  3405   3418   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:29  Normal   Normal  27700    Normal  
+3     51226  0      30000  26000  27000  3400   3418   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:29  Normal   Normal   -        -       
+4     51201  0      28200  25600  26000  3393   3416   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:29  Normal   Normal  27300    Normal  
+5     51198  0      28400  25500  25900  3407   3415   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:30  Normal   Normal  27000    Normal  
+6     51194  0      27800  24900  25000  3395   3416   Idle     Normal   Normal   Normal   100%     2024-07-08 00:23:29  Normal   Normal  26300    Normal  
+7     -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+8     -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+9     -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+10    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+11    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+12    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+13    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+14    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+15    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+16    -      -      -      -      -      -      -      Absent   -        -        -        -        -                    -        -       
+Command completed successfully
+$$
+pylon>
