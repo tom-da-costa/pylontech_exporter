@@ -1,7 +1,7 @@
-from prometheus_client import start_http_server, Gauge, Enum, Summary, Counter
+from prometheus_client import start_http_server, Gauge, Enum, Counter
 import time
 import serial
-import json
+# import json
 import os
 import argparse
 
