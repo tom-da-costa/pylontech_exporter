@@ -160,18 +160,26 @@ def exec_cmd(ser, cmd):
     if "Unknown Command" in resp:
         raise PylontechUnknownCommandError(f"Unknown Command ({cmd})")
     if not resp.endswith("pylon>"):
-        raise PylontechInvalidResponseError(f"Reponse do not end with pylon>. resp : {resp}")
+        raise PylontechInvalidResponseError(
+            f"Reponse do not end with pylon>. resp : {resp}"
+        )
     if not "@" in resp and not "@" in resp:
-        raise PylontechInvalidResponseError(f"Invalid format, not @ and $$ present in response. resp : {resp}")
+        raise PylontechInvalidResponseError(
+            f"Invalid format, not @ and $$ present in response. resp : {resp}"
+        )
     return resp
+
 
 def extract_response_from_raw(raw_resp):
     raw_resp_filtered = raw_resp.replace("\r", "")
     start = raw_resp_filtered.find("@\n")
     end = raw_resp_filtered.find("\n$$")
     if start == -1 or end == -1:
-        raise PylontechInvalidResponseError(f"Invalid format, not @ and $$ present in response. resp : {raw_resp}")
+        raise PylontechInvalidResponseError(
+            f"Invalid format, not @ and $$ present in response. resp : {raw_resp}"
+        )
     return raw_resp_filtered[start:end]
+
 
 def parse_pwr_response(resp):
     lines = resp.splitlines()
@@ -272,7 +280,9 @@ def update_metrics(ser):
                 printDebug(cell_dicts, start=f"cell_dicts({idbat}) = ")
                 pwr_dict["Cells"] = cell_dicts
             except Exception as e:
-                print(f"Error while collecting cells of battery {idbat}. Skip bat {idbat}")
+                print(
+                    f"Error while collecting cells of battery {idbat}. Skip bat {idbat}"
+                )
                 print(e)
                 COLLECT_DATA_FAILS.inc()
         printDebug(pwr_dicts, start="pwr_dicts = ")
