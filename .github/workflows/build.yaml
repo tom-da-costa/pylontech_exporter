@@ -6,7 +6,6 @@ on:
 
 env:
   IMAGE_NAME: ${{ github.repository }}
-  # IMAGE_NAME: "${{ secrets.REGISTRY_USERNAME }}/${{ github.event.repository.name }}"
 
 jobs:
   build:
@@ -14,7 +13,7 @@ jobs:
     permissions:
       contents: read
     steps: 
-      - name: Check out repository code
+      - name: Checkout repository code
         uses: actions/checkout@v4
 
       - name: Check env
@@ -22,10 +21,10 @@ jobs:
           pwd
           id
           printenv
-          ls
-
+          ls -alh
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
         with:
