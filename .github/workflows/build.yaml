@@ -6,7 +6,6 @@ on:
 
 env:
   IMAGE_NAME: ${{ github.repository }}
-  # CI_IMAGE_FULL_NAME: "${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/ci-image:latest"
 
 jobs:
   build:
@@ -14,7 +13,7 @@ jobs:
     permissions:
       contents: read
     container:
-      image: "${{ secrets.REGISTRY_HOST }}/${{ github.repository }}/ci-image:latest"
+      image: "${{ vars.REGISTRY_HOST }}/${{ github.repository }}/ci-image:latest"
       credentials:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
