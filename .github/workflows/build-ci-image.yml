@@ -2,6 +2,11 @@ name: "Build ci image"
 
 on: 
   workflow_dispatch:
+    inputs:
+      docker_tag:
+        default: "latest"
+        description: "Docker tag :"
+        required: false
 
 env:
   IMAGE_NAME: ${{ github.repository }}/ci-image
@@ -47,7 +52,7 @@ jobs:
         with:
           images: ${{ secrets.REGISTRY_HOST }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest
+            type=raw,value=${{ inputs.docker_tag }}
 
       # type=raw,value=${{ steps.generate-docker-tag.outputs.DOCKER_TAG }}
       - name: Build and push
