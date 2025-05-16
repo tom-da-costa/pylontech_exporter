@@ -66,4 +66,4 @@ jobs:
 
       - name: Clean up docker images
         run: |
-          docker image prune -af
+          docker image prune -af --filter "until=48h"
