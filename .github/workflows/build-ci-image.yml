@@ -1,11 +1,10 @@
-name: "Build"
+name: "Build ci image"
 
 on: 
-  push:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository }}/ci-image
 
 jobs:
   build:
@@ -48,16 +47,14 @@ jobs:
         with:
           images: ${{ secrets.REGISTRY_HOST }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=semver,pattern={{major}}.{{minor}}.{{patch}}
-            type=ref,event=branch
+            type=raw,value=latest
 
       # type=raw,value=${{ steps.generate-docker-tag.outputs.DOCKER_TAG }}
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          # push: ${{ github.ref_name == 'main' && 'true' || 'false' }}
+          context: .github
+          platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
