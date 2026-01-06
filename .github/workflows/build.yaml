@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    runs-on: [self-hosted]
+    runs-on: [ubuntu-latest] # Free for public repository
     permissions:
       contents: read
       packages: write
