@@ -1,0 +1,57 @@
+pylon>bat 1
+@
+Battery  Volt     Curr     Tempr    Base State   Volt. State  Curr. State  Temp. State  SOC          Coulomb      BAL         
+0        3416     0        26500    Idle         Normal       Normal       Normal       100%         49560 mAH      N
+1        3403     0        26500    Idle         Normal       Normal       Normal       100%         49477 mAH      N
+2        3414     0        26500    Idle         Normal       Normal       Normal       100%         49558 mAH      N
+3        3413     0        26500    Idle         Normal       Normal       Normal       100%         49557 mAH      N
+4        3413     0        26500    Idle         Normal       Normal       Normal       100%         49556 mAH      N
+5        3405     0        26800    Idle         Normal       Normal       Normal       100%         49477 mAH      N
+6        3412     0        26800    Idle         Normal       Normal       Normal       100%         49548 mAH      N
+7        3418     0        26800    Idle         Normal       Normal       Normal       100%         49561 mAH      N
+8        3418     0        26800    Idle         Normal       Normal       Normal       100%         49562 mAH      N
+9        3415     0        26800    Idle         Normal       Normal       Normal       100%         49556 mAH      N
+10       3413     0        26200    Idle         Normal       Normal       Normal       100%         49555 mAH      N
+11       3411     0        26200    Idle         Normal       Normal       Normal       100%         49555 mAH      N
+12       3415     0        26200    Idle         Normal       Normal       Normal       100%         49556 mAH      N
+13       3414     0        26200    Idle         Normal       Normal       Normal       100%         49557 mAH      N
+14       3413     0        26200    Idle         Normal       Normal       Normal       100%         49555 mAH      N
+Command completed successfully
+$$
+pylon>bat 4
+@
+Battery  Volt     Curr     Tempr    Base State   Volt. State  Curr. State  Temp. State  SOC          Coulomb      BAL         
+0        3414     0        26000    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+1        3414     0        26000    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+2        3414     0        26000    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+3        3415     0        26000    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+4        3414     0        26000    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+5        3413     0        25900    Idle         Normal       Normal       Normal       100%         49787 mAH      N
+6        3415     0        25900    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+7        3414     0        25900    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+8        3414     0        25900    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+9        3414     0        25900    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+10       3414     0        25600    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+11       3414     0        25600    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+12       3414     0        25600    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+13       3415     0        25600    Idle         Normal       Normal       Normal       100%         49788 mAH      N
+14       3393     0        25600    Idle         Normal       Normal       Normal       100%         49688 mAH      N
+Command completed successfully
+$$
+pylon>
+
+
+
+pylon>bat 20 
+@
+Invalid command or fail to excute.
+Usage:
+Battery data show - bat [pwr][index]
+$$
+pylon>
+
+pylon>bit 1
+@
+Unknown command 'bit' - try 'help'
+$$
+pylon>
